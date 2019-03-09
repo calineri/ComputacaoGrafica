@@ -15,6 +15,8 @@ let height;
 let aspectUniform;
 let aspect;
 
+// Teste de versionamento do git
+
 function resize(){
     if(!gl) return;
     width = window.innerWidth;
