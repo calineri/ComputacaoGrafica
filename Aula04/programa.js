@@ -15,8 +15,6 @@ let height;
 let aspectUniform;
 let aspect;
 
-// Teste de versionamento do git
-
 function resize(){
     if(!gl) return;
     width = window.innerWidth;
@@ -70,13 +68,13 @@ function getData(h, v){
     
     let points = [
 //       X    Y
-        0.00,0.05,
-        0.05,-0.05,
-        0.00,0.0001,
+        0.00 + h,0.05 + v,
+        0.05 + h,-0.05 + v,
+        0.00 + h,0.0001 + v,
 
-        0.00,0.05,
-        -0.05,-0.05,
-        0.00,0.0001
+        0.00 + h,0.05 + v,
+        -0.05 + h,-0.05 + v,
+        0.00 + h,0.0001 + v
         
 
     ];
@@ -117,8 +115,9 @@ async function main(){
     gl.enableVertexAttribArray(positionAttr);
     gl.vertexAttribPointer(positionAttr, 2, gl.FLOAT, false, 0, 0);
 
-// 7.1 - 
+// 7.1 - ASPECT UNIFORM
     resize();
+    window.addEventListener("resize", resize);
 
 // 8 - Chamar o loop de redesenho
     render();
@@ -136,9 +135,9 @@ function render(){
 }
 
 function movimenta(event){
-
+    console.log(event);
     if (event.key == "ArrowUp"){
-
+        getData(0.01, 0.0);
     }
     if (event.key == "ArrowDown"){
         
@@ -153,7 +152,5 @@ function movimenta(event){
 }
 
 window.addEventListener("load", main);
-
-window.addEventListener("resize", resize);
 
 window.addEventListener("keydown", movimenta);
