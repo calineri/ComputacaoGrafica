@@ -15,11 +15,15 @@ let height;
 let aspectUniform;
 let aspect;
 let points = [0.00,-0.8899, 0.05,-0.9900,0.00,-0.9398,
-              0.00,-0.8899,-0.05,-0.9900,0.00,-0.9398];
+              0.00,-0.8899,-0.05,-0.9900,0.00,-0.9398
+            ];
 
 let scenario;
-let fundo  = [-1.00,-1.00,-1.00,-0.50,-0.50,-0.50,
-              -1.00,-1.00,-0.50,-1.00,-0.50,-0.50];
+let scenarioPoint  = [-1.00,-1.00,-1.00,1.00,-0.50,1.00,
+                      -1.00,-1.00,-0.50,1.00,-0.50,-0.50,
+                      1.00,1.00,1.00,-1.00,0.50,-1.00,
+                      1.00,1.00,0.50,-1.00,0.50,0.50
+                    ];
 
 function resize(){
     if(!gl) return;
@@ -85,7 +89,7 @@ function getData(x, y){
 }
 
 function getScenario(){
-    return {"scenario" : new Float32Array(scenario)};
+    return {"points" : new Float32Array(scenarioPoint)};
 }
 
 async function main(){
@@ -138,7 +142,9 @@ function render(){
     //gl.POINTS, 
     //gl.LINES, gl.LINE_STRIP, gl.LINE_LOOP, 
     //gl.TRIANGLES, gl.TRIANGLES_STRIP, gl.TRIANGLES_FAN
-    gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
+    desenhaFundo();
+    desenhaNave();
+    //gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
     window.requestAnimationFrame(render);
 }
 
@@ -158,12 +164,20 @@ function movimenta(event){
     }
 
     console.log(data.points);
-    positionAttr = gl.getAttribLocation(shaderProgram, "position");
-    positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    //gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
+
+}
+
+function desenhaNave(){
     gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(positionAttr);
-    gl.vertexAttribPointer(positionAttr, 2, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
+
+}
+
+function desenhaFundo(){
+    scenario = getScenario();
+    gl.bufferData(gl.ARRAY_BUFFER, scenario.points, gl.STATIC_DRAW);
+    gl.drawArrays(gl.TRIANGLES, 0, scenario.points.length / 2);
 
 }
 
