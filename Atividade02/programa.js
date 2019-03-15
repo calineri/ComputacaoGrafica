@@ -14,8 +14,12 @@ let width;
 let height;
 let aspectUniform;
 let aspect;
+let points = [0.00,-0.8899, 0.05,-0.9900,0.00,-0.9398,
+              0.00,-0.8899,-0.05,-0.9900,0.00,-0.9398];
 
-// Teste de versionamento do git
+let scenario;
+let fundo  = [-1.00,-1.00,-1.00,-0.50,-0.50,-0.50,
+              -1.00,-1.00,-0.50,-1.00,-0.50,-0.50];
 
 function resize(){
     if(!gl) return;
@@ -62,25 +66,26 @@ function linkProgram(vertexShader, fragmentShader, gl){
     return program;
 }
 
-function getData(h, v){
+function getData(x, y){
+    points[0] = points[0] + x;
+    points[2] = points[2] + x;
+    points[4] = points[4] + x;
+    points[6] = points[6] + x;
+    points[8] = points[8] + x;
+    points[10] = points[10] + x;
     
-    let a = [0.00,0.05];
-    let b = [0.05,0.05];
-    let c = [0.00,0.0001];
+    points[1] = points[1] + y;
+    points[3] = points[3] + y;
+    points[5] = points[5] + y;
+    points[7] = points[7] + y;
+    points[9] = points[9] + y;
+    points[11] = points[11] + y;
     
-    let points = [
-//       X    Y
-        0.00,0.05,
-        0.05,-0.05,
-        0.00,0.0001,
-
-        0.00,0.05,
-        -0.05,-0.05,
-        0.00,0.0001
-        
-
-    ];
     return {"points" : new Float32Array(points)};
+}
+
+function getScenario(){
+    return {"scenario" : new Float32Array(scenario)};
 }
 
 async function main(){
@@ -105,9 +110,10 @@ async function main(){
 // 5 - Linkar o programa de shader
     shaderProgram = linkProgram(vertexShader, fragmentShader, gl);
     gl.useProgram(shaderProgram);
-    resize();
+    
 // 6 - Criar dados de parâmetro
     data = getData(0.0,0.0);
+    scenario = getScenario();
 
 // 7 - Transferir os dados para GPU
     positionAttr = gl.getAttribLocation(shaderProgram, "position");
@@ -117,8 +123,9 @@ async function main(){
     gl.enableVertexAttribArray(positionAttr);
     gl.vertexAttribPointer(positionAttr, 2, gl.FLOAT, false, 0, 0);
 
-// 7.1 - 
+// 7.1 - ASPECT UNIFORM
     resize();
+    window.addEventListener("resize", resize);
 
 // 8 - Chamar o loop de redesenho
     render();
@@ -136,24 +143,30 @@ function render(){
 }
 
 function movimenta(event){
-
+    console.log(event);
     if (event.key == "ArrowUp"){
-
+        data = getData(0.0,0.02);
     }
     if (event.key == "ArrowDown"){
-        
+        data = getData(0.0,-0.02);
     }
     if (event.key == "ArrowLeft"){
-        
+        data = getData(-0.02,0.0);
     }
     if (event.key == "ArrowRight"){
-        
+        data = getData(0.02,0.0);
     }
+
+    console.log(data.points);
+    positionAttr = gl.getAttribLocation(shaderProgram, "position");
+    positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(positionAttr);
+    gl.vertexAttribPointer(positionAttr, 2, gl.FLOAT, false, 0, 0);
 
 }
 
 window.addEventListener("load", main);
-
-window.addEventListener("resize", resize);
 
 window.addEventListener("keydown", movimenta);
