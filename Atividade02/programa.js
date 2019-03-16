@@ -20,9 +20,13 @@ let points = [0.00,-0.8899, 0.05,-0.9900,0.00,-0.9398,
             
             ];
 let fundo;
-let fundoPoints = [-1.33,-1.00,-1.33,1,1.33,1,
-                  -1.33,-1.00,+1.33,-1,1.33,1
+let fundoPoints = [-1.0,-1.0,-1.0,1,1.0,1,
+                  -1.0,-1.0,+1.0,-1,1.0,1
             ];
+let estrela;
+let estrelaPoints = [ 0.0,-0.02,-0.03,0.03,0.03,0.03,
+                     -0.03,0.0,0.0,0.05,0.03,0.0
+            ]
 
 function resize(){
     if(!gl) return;
@@ -32,8 +36,6 @@ function resize(){
     canvas.setAttribute("height", height);
     gl.viewport(0,0,width, height);
     aspect = width / height;
-    console.log(width);
-    console.log(height);
 
     aspectUniform = gl.getUniformLocation(shaderProgram, "aspect");
     gl.uniform1f (aspectUniform, aspect); 
@@ -93,6 +95,10 @@ function getFundo(){
     return {"points" : new Float32Array(fundoPoints)}
 }
 
+function getEstrela(){
+    return {"points" : new Float32Array(estrelaPoints)}
+}
+
 async function main(){
 // 1 - Carregar tela de desenho
     canvas = getCanvas();
@@ -119,14 +125,13 @@ async function main(){
 // 6 - Criar dados de parâmetro
     data = getData(0.0,0.0);
     fundo = getFundo();
+    estrela = getEstrela();
 
 // 7 - Transferir os dados para GPU
     positionAttr = gl.getAttribLocation(shaderProgram, "position");
     colorUniformLocation = gl.getUniformLocation(shaderProgram, "u_color");
-    gl.uniform4f(colorUniformLocation,0.0,0.0,1.0,1.0);
     positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(positionAttr);
     gl.vertexAttribPointer(positionAttr, 2, gl.FLOAT, false, 0, 0);
 
@@ -147,13 +152,12 @@ function render(){
     //gl.TRIANGLES, gl.TRIANGLES_STRIP, gl.TRIANGLES_FAN
     //gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
     desenhaFundo();
-    //desenhaEstrela();
+    desenhaEstrela();
     desenhaNave();
     window.requestAnimationFrame(render);
 }
 
 function movimenta(event){
-    console.log(event);
     if (event.key == "ArrowUp"){
         data = getData(0.0,0.02);
     }
@@ -166,8 +170,6 @@ function movimenta(event){
     if (event.key == "ArrowRight"){
         data = getData(0.02,0.0);
     }
-
-    //console.log(data.points);
     
 }
 
@@ -184,21 +186,10 @@ function desenhaFundo(){
     gl.drawArrays(gl.TRIANGLES, 0, fundo.points.length / 2);
 }
 
-function desenhaObstaculos(){
+function desenhaEstrela(){
     gl.uniform4f(colorUniformLocation,1.0,1.0,1.0,1.0);
-    for (var ii = 0; ii < 5 ; ++ii) {
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            Math.random(), Math.random(),
-            Math.random(), Math.random(),
-            Math.random(), Math.random(),
-            Math.random(), Math.random(),
-            Math.random(), Math.random(),
-            Math.random(), Math.random(),
-         ]), gl.STATIC_DRAW);
-    }
-    gl.drawArrays(gl.TRIANGLES, 0, fundo.points.length / 2);
-
-
+    gl.bufferData(gl.ARRAY_BUFFER, estrela.points, gl.STATIC_DRAW);
+    gl.drawArrays(gl.TRIANGLES, 0, estrela.points.length / 2);
 }
 
 window.addEventListener("load", main);
