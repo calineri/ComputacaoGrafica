@@ -12,18 +12,17 @@ let positionAttr;
 let positionBuffer;
 let width;
 let height;
+let colorUniformLocation;
 let aspectUniform;
 let aspect;
 let points = [0.00,-0.8899, 0.05,-0.9900,0.00,-0.9398,
               0.00,-0.8899,-0.05,-0.9900,0.00,-0.9398
+            
             ];
-
-let scenario;
-let scenarioPoint  = [-1.00,-1.00,-1.00,1.00,-0.50,1.00,
-                      -1.00,-1.00,-0.50,1.00,-0.50,-0.50,
-                      1.00,1.00,1.00,-1.00,0.50,-1.00,
-                      1.00,1.00,0.50,-1.00,0.50,0.50
-                    ];
+let fundo;
+let fundoPoints = [-1.33,-1.00,-1.33,1,1.33,1,
+                  -1.33,-1.00,+1.33,-1,1.33,1
+            ];
 
 function resize(){
     if(!gl) return;
@@ -33,6 +32,8 @@ function resize(){
     canvas.setAttribute("height", height);
     gl.viewport(0,0,width, height);
     aspect = width / height;
+    console.log(width);
+    console.log(height);
 
     aspectUniform = gl.getUniformLocation(shaderProgram, "aspect");
     gl.uniform1f (aspectUniform, aspect); 
@@ -88,8 +89,8 @@ function getData(x, y){
     return {"points" : new Float32Array(points)};
 }
 
-function getScenario(){
-    return {"points" : new Float32Array(scenarioPoint)};
+function getFundo(){
+    return {"points" : new Float32Array(fundoPoints)}
 }
 
 async function main(){
@@ -117,10 +118,12 @@ async function main(){
     
 // 6 - Criar dados de parâmetro
     data = getData(0.0,0.0);
-    scenario = getScenario();
+    fundo = getFundo();
 
 // 7 - Transferir os dados para GPU
     positionAttr = gl.getAttribLocation(shaderProgram, "position");
+    colorUniformLocation = gl.getUniformLocation(shaderProgram, "u_color");
+    gl.uniform4f(colorUniformLocation,0.0,0.0,1.0,1.0);
     positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
@@ -142,9 +145,10 @@ function render(){
     //gl.POINTS, 
     //gl.LINES, gl.LINE_STRIP, gl.LINE_LOOP, 
     //gl.TRIANGLES, gl.TRIANGLES_STRIP, gl.TRIANGLES_FAN
-    desenhaFundo();
-    desenhaNave();
     //gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
+    desenhaFundo();
+    //desenhaEstrela();
+    desenhaNave();
     window.requestAnimationFrame(render);
 }
 
@@ -163,21 +167,37 @@ function movimenta(event){
         data = getData(0.02,0.0);
     }
 
-    console.log(data.points);
-    //gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
-
+    //console.log(data.points);
+    
 }
 
 function desenhaNave(){
+    gl.uniform4f(colorUniformLocation,0.0,0.0,0.0,1.0);
     gl.bufferData(gl.ARRAY_BUFFER, data.points, gl.STATIC_DRAW);
     gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
-
+    
 }
 
 function desenhaFundo(){
-    scenario = getScenario();
-    gl.bufferData(gl.ARRAY_BUFFER, scenario.points, gl.STATIC_DRAW);
-    gl.drawArrays(gl.TRIANGLES, 0, scenario.points.length / 2);
+    gl.uniform4f(colorUniformLocation,0.0,0.0,1.0,1.0);
+    gl.bufferData(gl.ARRAY_BUFFER, fundo.points, gl.STATIC_DRAW);
+    gl.drawArrays(gl.TRIANGLES, 0, fundo.points.length / 2);
+}
+
+function desenhaObstaculos(){
+    gl.uniform4f(colorUniformLocation,1.0,1.0,1.0,1.0);
+    for (var ii = 0; ii < 5 ; ++ii) {
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            Math.random(), Math.random(),
+            Math.random(), Math.random(),
+            Math.random(), Math.random(),
+            Math.random(), Math.random(),
+            Math.random(), Math.random(),
+            Math.random(), Math.random(),
+         ]), gl.STATIC_DRAW);
+    }
+    gl.drawArrays(gl.TRIANGLES, 0, fundo.points.length / 2);
+
 
 }
 
