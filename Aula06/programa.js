@@ -2,6 +2,7 @@
 
 let {mat4, vec4, vec3, vec2} = glMatrix;
 
+let frame = 0;
 let canvas;
 let gl;
 let vertexShaderSource;
@@ -23,8 +24,12 @@ let colorUniform;
 let viewUniform;
 let view;
 let eye = [0,0,0];
-let color1 = [1,0,0];
-let color2 = [0,0,1];
+let color1 = [1, 0, 0];
+let color2 = [0, 0, 1];
+let color3 = [0, .7, 0];
+let color4 = [1, 0, 1];
+let color5 = [1, .6, 0];
+let color6 = [0, 1, 1];
 
 function resize(){
     if(!gl) return;
@@ -39,7 +44,7 @@ function resize(){
     let fovy = 1.3;
     projectionUniform = gl.getUniformLocation(shaderProgram, "projection");
     projection = mat4.perspective([], fovy, aspect, near, far);
-    gl.uniformMaatrix4fv(projectionUniform, false, projection); 
+    gl.uniformMatrix4fv(projectionUniform, false, projection); 
 }
 
 function getCanvas(){
@@ -48,6 +53,7 @@ function getCanvas(){
 
 function getGLContext(canvas){
     let gl = canvas.getContext("webgl");
+    gl.enable(gl.DEPTH_TEST);
     return gl;
 }
 
@@ -75,22 +81,44 @@ function linkProgram(vertexShader, fragmentShader, gl){
 }
 
 function getData(){
-    
-    let points = [
-        0.5,0.5, 1.0,
-        0.05,-0.5, 0.0,
-        -0.5,-0.5,1.0,
+    let p = {
+        a: [-1, 1, -1],
+        b: [-1, -1, -1],
+        c: [1, 1, -1],
+        d: [1, -1, -1],
+        e: [-1, 1, 1],
+        f: [1, 1, 1],
+        g: [-1, -1, 1],
+        h: [1, -1, 1]
+    };
 
-        -0.5,-0.5, 0.5,
-        -0.05,0.5, 2.0,
-        0.5,0.5,-1.0,
-        
-        0.5,0.5, 0.75,
-        0.05,-0.5, 0.0,
-        -0.5,-0.5,1.0
+    let faces = [
+        // FRENTE
+        ...p.a, ...p.b, ...p.c,
+        ...p.d, ...p.c, ...p.b,
 
+        // TOPO
+        ...p.e, ...p.a, ...p.f,
+        ...p.c, ...p.f, ...p.a,
+
+        // BAIXO
+        ...p.b, ...p.g, ...p.d,
+        ...p.h, ...p.d, ...p.g,
+
+        // ESQUERDA
+        ...p.e, ...p.g, ...p.a,
+        ...p.b, ...p.a, ...p.g,
+
+        // DIREITA
+        ...p.c, ...p.d, ...p.f,
+        ...p.h, ...p.f, ...p.d,
+
+        //FUNDO
+        ...p.f, ...p.h, ...p.e,
+        ...p.g, ...p.e, ...p.h
     ];
-    return {"points" : new Float32Array(points)};
+
+    return { "points": new Float32Array(faces)};
 }
 
 async function main(){
@@ -137,12 +165,12 @@ async function main(){
     let center = [0,0,0];
     view = mat4.lookAt([], eye, center, up);
     viewUniform = gl.getUniformLocation(shaderProgram, "view");
-    gl.uniformMaatrix4fv(viewUniform, false, view);
+    gl.uniformMatrix4fv(viewUniform, false, view);
 
 // 7.3 - Model Matrix Uniform
     model = mat4.create();
     modelUniform = gl.getUniformLocation(shaderProgram, "model");
-    gl.uniformMaatrix4fv(modelUniform, false, model);
+    gl.uniformMatrix4fv(modelUniform, false, model);
 
 // 7.4 - Color Uniform
     colorUniform = gl.getUniformLocation(shaderProgram, "color");
@@ -153,19 +181,45 @@ async function main(){
 }
 
 function render(){
+    frame ++;
+
+    let time = frame / 100;
+
+    eye  = [Math.sin(time) * 5, 3, Math.cos(time) * 5];
+    let up = [0, 1, 0];
+    let center = [0, 0, 0];
+    view = mat4.lookAt([], eye, center, up);
+    gl.uniformMatrix4fv(viewUniform, false, view);
+
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // gl.POINTS
     // gl.LINES, gl.LINE_STRIP, gl.LINE_LOOP
     // gl.TRIANGLES, gl.TRIANGLE_STRIP, gl.TRIANGLE_FAN 
     //gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
     
-    // RENDERIZA O PERSONAGEM
+    // FRENTE
     gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     
-    // RENDERIZA O CENARIO
+    // TOPO
     gl.uniform3f(colorUniform, color2[0], color2[1], color2[2]);
-    gl.drawArrays(gl.TRIANGLES, 6, 3);
+    gl.drawArrays(gl.TRIANGLES, 6, 6);
+    
+    // BAIXO
+    gl.uniform3f(colorUniform, color3[0], color3[1], color3[2]);
+    gl.drawArrays(gl.TRIANGLES, 12, 6);
+
+    // ESQUERDA
+    gl.uniform3f(colorUniform, color4[0], color4[1], color4[2]);
+    gl.drawArrays(gl.TRIANGLES, 18, 6);
+
+    // DIREITA
+    gl.uniform3f(colorUniform, color5[0], color5[1], color5[2]);
+    gl.drawArrays(gl.TRIANGLES, 24, 6);
+
+    // FUNDO
+    gl.uniform3f(colorUniform, color6[0], color6[1], color6[2]);
+    gl.drawArrays(gl.TRIANGLES, 30, 6);
     
     window.requestAnimationFrame(render);
 }
