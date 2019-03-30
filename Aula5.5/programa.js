@@ -17,10 +17,9 @@ let width;
 let height;
 let projectionUniform;
 let projection;
-let loc = [2.5,0,0];
+let loc = [0,0,0];
 let modelUniform;
 let model;
-let model2;
 let colorUniform;
 let viewUniform;
 let view;
@@ -31,11 +30,6 @@ let color3 = [0, .7, 0];
 let color4 = [1, 0, 1];
 let color5 = [1, .6, 0];
 let color6 = [0, 1, 1];
-
-let keyup = false;
-let keydown = false;
-let keyleft = false;
-let keyright = false;
 
 function resize(){
     if(!gl) return;
@@ -166,7 +160,7 @@ async function main(){
     window.addEventListener("resize", resize);
 
 // 7.2 - View Matrix Uniform 
-    eye = [0,0,5];
+    eye = [0,0,-5];
     let up = [0,1,0];
     let center = [0,0,0];
     view = mat4.lookAt([], eye, center, up);
@@ -176,9 +170,7 @@ async function main(){
 // 7.3 - Model Matrix Uniform
     model = mat4.create();
     modelUniform = gl.getUniformLocation(shaderProgram, "model");
-
-    model2 = mat4.fromTranslation([],loc);
-
+    gl.uniformMatrix4fv(modelUniform, false, model);
 
 // 7.4 - Color Uniform
     colorUniform = gl.getUniformLocation(shaderProgram, "color");
@@ -205,61 +197,46 @@ function render(){
     // gl.TRIANGLES, gl.TRIANGLE_STRIP, gl.TRIANGLE_FAN 
     //gl.drawArrays(gl.TRIANGLES, 0, data.points.length / 2);
     
-    // Cubo 01
-    gl.uniformMatrix4fv(modelUniform, false, model);
+    // FRENTE
     gl.uniform3f(colorUniform, color1[0], color1[1], color1[2]);
-    gl.drawArrays(gl.TRIANGLES, 0, 36);
-
-    // Cubo 02
-    if (keyup){
-        loc[1] = loc[1] + 0.03;
-    }
-    if (keydown){
-        loc[1] = loc[1] - 0.03;
-    }
-    if (keyleft){
-        loc[0] = loc[0] - 0.03;
-    }
-    if (keyright){
-        loc[0] = loc[0] + 0.03;
-    }
-
-    gl.uniformMatrix4fv(modelUniform, false, mat4.fromTranslation([],loc));
-    //gl.uniformMatrix4fv(modelUniform, false, model2);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    
+    // TOPO
     gl.uniform3f(colorUniform, color2[0], color2[1], color2[2]);
-    gl.drawArrays(gl.TRIANGLES, 0, 36);
+    gl.drawArrays(gl.TRIANGLES, 6, 6);
+    
+    // BAIXO
+    gl.uniform3f(colorUniform, color3[0], color3[1], color3[2]);
+    gl.drawArrays(gl.TRIANGLES, 12, 6);
+
+    // ESQUERDA
+    gl.uniform3f(colorUniform, color4[0], color4[1], color4[2]);
+    gl.drawArrays(gl.TRIANGLES, 18, 6);
+
+    // DIREITA
+    gl.uniform3f(colorUniform, color5[0], color5[1], color5[2]);
+    gl.drawArrays(gl.TRIANGLES, 24, 6);
+
+    // FUNDO
+    gl.uniform3f(colorUniform, color6[0], color6[1], color6[2]);
+    gl.drawArrays(gl.TRIANGLES, 30, 6);
     
     window.requestAnimationFrame(render);
 }
 
-function aperta(event){
+function movimenta(event){
+
     if (event.key == "ArrowUp"){
-        keyup = true;
+
     }
     if (event.key == "ArrowDown"){
-        keydown = true;
+        
     }
     if (event.key == "ArrowLeft"){
-        keyleft = true;
+        
     }
     if (event.key == "ArrowRight"){
-        keyright = true;
-    }
-
-}
-
-function solta(event){
-    if (event.key == "ArrowUp"){
-        keyup = false;
-    }
-    if (event.key == "ArrowDown"){
-        keydown = false;
-    }
-    if (event.key == "ArrowLeft"){
-        keyleft = false;
-    }
-    if (event.key == "ArrowRight"){
-        keyright = false;
+        
     }
 
 }
@@ -274,7 +251,6 @@ window.addEventListener("load", main);
 
 window.addEventListener("resize", resize);
 
-window.addEventListener("keydown", aperta);
-window.addEventListener("keyup", solta);
+window.addEventListener("keydown", movimenta);
 
-//window.addEventListener("mousemove", follow);
+window.addEventListener("mousemove", follow);
