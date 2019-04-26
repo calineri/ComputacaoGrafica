@@ -2,16 +2,6 @@
 
 let {mat4, vec4, vec3, vec2} = glMatrix;
 
-const SPEED = 0.1;
-
-const COS_45 = Math.cos(Math.PI * 0.25);
-
-let ku = 0, 
-    kd = 0, 
-    kl = 0, 
-    kr = 0,
-    pos = [2.5,0,0];
-
 let frame = 0;
 let canvas;
 let gl;
@@ -41,6 +31,11 @@ let color3 = [0, .7, 0];
 let color4 = [1, 0, 1];
 let color5 = [1, .6, 0];
 let color6 = [0, 1, 1];
+
+let keyup = false;
+let keydown = false;
+let keyleft = false;
+let keyright = false;
 
 function resize(){
     if(!gl) return;
@@ -182,8 +177,7 @@ async function main(){
     model = mat4.create();
     modelUniform = gl.getUniformLocation(shaderProgram, "model");
 
-    //model2 = mat4.fromTranslation([],loc);
-    model2 = mat4.fromTranslation([],pos);
+    model2 = mat4.fromTranslation([],loc);
 
 
 // 7.4 - Color Uniform
@@ -199,19 +193,6 @@ function render(){
 
     let time = frame / 100;
 
-    let hor = (kl + kr) * SPEED;
-    let ver = (ku + kd) * SPEED;
-
-    if(hor !== 0 && ver !== 0) {
-        hor *= COS_45;
-        ver *= COS_45;
-    }
-
-    pos[0] += hor;
-    pos[1] += ver;
-
-    model2 = mat4.fromTranslation([], pos);
-    
     eye  = [Math.sin(time) * 5, 3, Math.cos(time) * 5];
     let up = [0, 1, 0];
     let center = [0, 0, 0];
@@ -230,26 +211,57 @@ function render(){
     gl.drawArrays(gl.TRIANGLES, 0, 36);
 
     // Cubo 02
-    //gl.uniformMatrix4fv(modelUniform, false, mat4.fromTranslation([],loc));
-    gl.uniformMatrix4fv(modelUniform, false, model2);
+    if (keyup){
+        loc[1] = loc[1] + 0.03;
+    }
+    if (keydown){
+        loc[1] = loc[1] - 0.03;
+    }
+    if (keyleft){
+        loc[0] = loc[0] - 0.03;
+    }
+    if (keyright){
+        loc[0] = loc[0] + 0.03;
+    }
+
+    gl.uniformMatrix4fv(modelUniform, false, mat4.fromTranslation([],loc));
+    //gl.uniformMatrix4fv(modelUniform, false, model2);
     gl.uniform3f(colorUniform, color2[0], color2[1], color2[2]);
     gl.drawArrays(gl.TRIANGLES, 0, 36);
     
     window.requestAnimationFrame(render);
 }
 
-function keyUp(evt){
-    if(evt.key === "ArrowDown") return kd = 0;
-    if(evt.key === "ArrowUp") return ku = 0;
-    if(evt.key === "ArrowLeft") return kl = 0;
-    if(evt.key === "ArrowRight") return kr = 0;
+function aperta(event){
+    if (event.key == "ArrowUp"){
+        keyup = true;
+    }
+    if (event.key == "ArrowDown"){
+        keydown = true;
+    }
+    if (event.key == "ArrowLeft"){
+        keyleft = true;
+    }
+    if (event.key == "ArrowRight"){
+        keyright = true;
+    }
+
 }
 
-function keyDown(evt){
-    if(evt.key === "ArrowDown") return kd = -1;
-    if(evt.key === "ArrowUp") return ku = 1;
-    if(evt.key === "ArrowLeft") return kl = -1;
-    if(evt.key === "ArrowRight") return kr = 1;
+function solta(event){
+    if (event.key == "ArrowUp"){
+        keyup = false;
+    }
+    if (event.key == "ArrowDown"){
+        keydown = false;
+    }
+    if (event.key == "ArrowLeft"){
+        keyleft = false;
+    }
+    if (event.key == "ArrowRight"){
+        keyright = false;
+    }
+
 }
 
 function follow(evt){
@@ -261,8 +273,8 @@ function follow(evt){
 window.addEventListener("load", main);
 
 window.addEventListener("resize", resize);
-window.addEventListener("mousemove", follow);
-window.addEventListener("keyup", keyUp);
-window.addEventListener("keydown", keyDown);    
+
+window.addEventListener("keydown", aperta);
+window.addEventListener("keyup", solta);
 
 //window.addEventListener("mousemove", follow);
